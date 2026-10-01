@@ -1,0 +1,92 @@
+{
+  "benchmark_date": "2026-09-30",
+  "hardware": "NVIDIA Jetson Orin Nano 8GB, GDM stopped",
+  "llama_cpp_build": "84e76d8 (v0.5.0-dev build 794)",
+  "model": "granite4-3b.gguf (Granite 4.0 Micro, 3.4B, Q4_K_M, 2.0GB)",
+  "model_source": "copied from ollama blob sha256-6c0268... (verified)",
+  "launch_env": {"GGML_CUDA_ENABLE_UNIFIED_MEMORY": "1"},
+
+  "architecture": {
+    "type": "hybrid Mamba2 SSM + attention (LLM_ARCH_GRANITE_HYBRID)",
+    "blocks": 40,
+    "native_context_length": 131072,
+    "embedding_length": 2560,
+    "attention.head_count": 40,
+    "attention.head_count_kv": "8 per attention block (per-layer array)",
+    "ssm.state_size": 256,
+    "ssm.inner_size": 5120,
+    "vocab_size": 100352,
+    "rope.freq_base": 10000000.0
+  },
+
+  "key_findings": {
+    "ngl_99_vs_15": {
+      "finding": "Full GPU offload (ngl 99) works on build 84e76d8+ with unified memory and is ~3x faster than the old hybrid guidance of ngl 15",
+      "ngl15_gen_tok_s": {"65536_q8_0": 6.7, "49152_q8_0": 6.4, "32768_f16": 6.6},
+      "ngl99_gen_tok_s": {"65536_q8_0": 19.5, "49152_q8_0": 19.4, "32768_f16": 20.0}
+    },
+    "kv_location": "At ngl 99 the KV cache lives on GPU (CUDA0). At ngl 15 it fell back to CPU (CUDA_Host) - the reason the old config was slow.",
+    "memory_layout_64k_q8_0": {
+      "CUDA0_model_buffer": "1998.84 MiB",
+      "CUDA_Host_model_buffer": "200.98 MiB",
+      "CUDA0_KV_buffer": "2720.00 MiB",
+      "CUDA0_compute_buffer": "212.04 MiB",
+      "CUDA_Host_compute_buffer": "74.04 MiB",
+      "server_RSS_total": "5.33 GB"
+    },
+    "under_load_oom": {
+      "date": "2026-09-30 21:58",
+      "config": "64k profile (65536 q8_0 ngl99), Hermes gateway resident",
+      "event": "kernel OOM-killed llama-server when the tool-call smoke test ran right after a 29K-token deep-gen filled the KV; journal: 'Out of memory: Killed process 488285 (llama-server) ... anon-rss:5206480kB ... task_memcg=hermes-gateway.service'",
+      "lesson": "64k is fine standalone (gateway stopped); with the Hermes gateway resident use the 49k profile - 49152 q8_0 measured 4.72GB RSS with 1.16GB free after generation"
+    },
+    "failed_configs": {
+      "131072_q8_0": "CPU KV 3536 MiB + compute - allocation failure",
+      "98304_q8_0": "died at load (memory)",
+      "81920_q8_0": "failed compute pp buffers even with clean memory and drop_caches - q8_0 KV ceiling is 64K"
+    },
+    "deep_context_128k": {
+      "prompt_tokens": 29048,
+      "prompt_eval_tok_s": 359.43,
+      "gen_tok_s_at_29k_depth": 7.17,
+      "note": "q4_0 KV costs generation speed at depth; pp remains strong. 128K is for huge prompts, not long generations."
+    }
+  },
+
+  "profiles": {
+    "32k": {
+      "ctx": 32768, "kv_type": "f16",
+      "gen_tok_s": 20.0, "rss_gb": 5.07, "free_after_gb": 0.85,
+      "use": "fastest, full-precision KV, best for tool calling"
+    },
+    "49k": {
+      "ctx": 49152, "kv_type": "q8_0",
+      "gen_tok_s": 19.4, "rss_gb": 4.72, "free_after_gb": 1.16,
+      "use": "deep-load safe - use when the Hermes gateway is resident"
+    },
+    "64k": {
+      "ctx": 65536, "kv_type": "q8_0",
+      "gen_tok_s": 19.5, "rss_gb": 5.33, "free_after_gb": 0.53,
+      "use": "balanced default - 2x context for ~2% speed loss"
+    },
+    "128k": {
+      "ctx": 131072, "kv_type": "q4_0",
+      "gen_tok_s": "~7.2 at 29K depth (shallower = faster)",
+      "pp_tok_s": 359, "rss_gb": 5.66, "free_after_gb": 0.24,
+      "use": "full native context for huge prompts; tightest margins - launch first, nothing else running"
+    }
+  },
+
+  "launch_command_template": {
+    "server": "GGML_CUDA_ENABLE_UNIFIED_MEMORY=1 llama-server -m ~/models/new-zoo/granite4-3b.gguf --alias granite4-3b --host 127.0.0.1 --port 8090 -ngl 99 -c {ctx} -ctk {kv} -ctv {kv} -b 512 -ub 512 -fa on --jinja --fit off -np 1 -t 6",
+    "sampling_server_defaults": "temp 0.6 top_p 0.95 top_k 0 (chat-tuned)",
+    "sampling_tool_calling": "temp 0.0 top_p 1.0 top_k 0 per request (greedy; IBM recommendation; BFCL v2 champion 96.2%)",
+    "hermes_link": "provider=custom base_url=http://127.0.0.1:8090/v1 context_length matches profile"
+  },
+
+  "test_notes": {
+    "preflight": "GDM stopped; MemAvailable >4.5GB before launch; pkill stale servers; poll /props not /health",
+    "max_tokens_guidance": "Keep prompt+response within profile ctx; for the 128K profile budget max_tokens <= 16384 so a long generation does not overflow the window",
+    "reliability": "Hybrid at ngl99 releases memory cleanly after pkill (no GPU-fragmentation lock like dense Ornith Q4_K_M) - retested across 8 launches, zero fragment failures"
+  }
+}

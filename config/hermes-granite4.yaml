@@ -1,0 +1,35 @@
+# Hermes Agent - Granite 4.0-3B local link
+# Apply with:
+#   hermes config set model.default granite4-3b
+#   hermes config set model.provider custom
+#   hermes config set model.base_url http://127.0.0.1:8090/v1
+#   hermes config set model.api_key none
+#   hermes config set model.context_length 65536
+# (or hand-merge this block into ~/.hermes/config.yaml)
+#
+# The server is OpenAI-compatible (llama.cpp --jinja), so Hermes's
+# "custom" provider connects directly to the local llama-server.
+
+model:
+  default: granite4-3b
+  provider: custom
+  base_url: http://127.0.0.1:8090/v1
+  api_key: none
+  context_length: 65536     # match the launched profile:
+                            #   32k -> 32768, 64k -> 65536, 128k -> 131072
+
+agent:
+  # Granite 4.0-3B is a 3.4B model - keep the agent loop lean so
+  # system prompt + tools + history fit the context with room to generate.
+  max_turns: 60
+
+terminal:
+  backend: local
+  timeout: 300
+
+# Per-request sampling guidance for granite4-3b:
+#   Tool calling / function calling: temperature 0.0, top_p 1.0 (greedy)
+#     - IBM recommendation, and the BFCL v2 champion config (96.2%)
+#     - llama-server defaults are temp 0.6 / top_p 0.95 (chat-tuned)
+#   Chat / creative: temperature 0.6, top_p 0.95 (server defaults)
+# The server applies its launch defaults; per-request overrides win.
