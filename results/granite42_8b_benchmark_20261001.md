@@ -36,7 +36,14 @@ does not want chain-of-thought burned into the output must pass:
 
 Optional: reasoning_effort "low" sets low-effort mode (template var
 low_effort). Template also supports truncate_history_thinking for trimming
-CoT from older turns.
+CoT from older turns — **defaults to True**, so past-turn assistant
+reasoning is dropped from the prompt automatically.
+
+Template defaults (decoded from GGUF chat_template):
+- `enable_thinking = True` (the token burner)
+- `low_effort = False`
+- `reasoning_effort == "low"` sets `low_effort = True`
+- `truncate_history_thinking = True`
 
 ## Launch command (verified)
 
