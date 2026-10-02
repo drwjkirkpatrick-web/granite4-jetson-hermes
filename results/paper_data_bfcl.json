@@ -1,0 +1,394 @@
+{
+ "arch-agent-1.5b": {
+  "overall": "46/52",
+  "pct": 88.5,
+  "per": {
+   "simple": [
+    28,
+    30
+   ],
+   "moderate_parallel": [
+    10,
+    12
+   ],
+   "moderate_chained": [
+    6,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "gemma4-e4b-qat": {
+  "overall": "48/52",
+  "pct": 92.3,
+  "per": {
+   "simple": [
+    28,
+    30
+   ],
+   "moderate_parallel": [
+    10,
+    12
+   ],
+   "moderate_chained": [
+    8,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "granite3.2-2b": {
+  "overall": "43/52",
+  "pct": 82.7,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    12,
+    12
+   ],
+   "moderate_chained": [
+    1,
+    8
+   ],
+   "coding": [
+    1,
+    2
+   ]
+  }
+ },
+ "granite4-3b-smoke": {
+  "overall": "48/50",
+  "pct": 96.0,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    12,
+    12
+   ],
+   "moderate_chained": [
+    7,
+    8
+   ]
+  }
+ },
+ "granite4-3b": {
+  "overall": "50/52",
+  "pct": 96.2,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    12,
+    12
+   ],
+   "moderate_chained": [
+    7,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "granite4.1-3b": {
+  "overall": "48/52",
+  "pct": 92.3,
+  "per": {
+   "simple": [
+    28,
+    30
+   ],
+   "moderate_parallel": [
+    11,
+    12
+   ],
+   "moderate_chained": [
+    7,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "granite4.2-3b": {
+  "overall": "44/52",
+  "pct": 84.6,
+  "per": {
+   "simple": [
+    28,
+    30
+   ],
+   "moderate_parallel": [
+    9,
+    12
+   ],
+   "moderate_chained": [
+    5,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "hammer2.1-3b": {
+  "overall": "49/52",
+  "pct": 94.2,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    11,
+    12
+   ],
+   "moderate_chained": [
+    7,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "hermes3-3b-q4": {
+  "overall": "31/52",
+  "pct": 59.6,
+  "per": {
+   "simple": [
+    19,
+    30
+   ],
+   "moderate_parallel": [
+    10,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "hermes3-3b-q5": {
+  "overall": "39/52",
+  "pct": 75.0,
+  "per": {
+   "simple": [
+    27,
+    30
+   ],
+   "moderate_parallel": [
+    10,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "llama3.2-3b": {
+  "overall": "20/52",
+  "pct": 38.5,
+  "per": {
+   "simple": [
+    18,
+    30
+   ],
+   "moderate_parallel": [
+    0,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "nanbeige4-3b": {
+  "overall": "37/52",
+  "pct": 71.2,
+  "per": {
+   "simple": [
+    27,
+    30
+   ],
+   "moderate_parallel": [
+    9,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    1,
+    2
+   ]
+  }
+ },
+ "qwen2.5-3b": {
+  "overall": "42/52",
+  "pct": 80.8,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    11,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "ternary-bonsai-q4": {
+  "overall": "44/52",
+  "pct": 84.6,
+  "per": {
+   "simple": [
+    28,
+    30
+   ],
+   "moderate_parallel": [
+    11,
+    12
+   ],
+   "moderate_chained": [
+    3,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "ternary-bonsai-tq2": {
+  "overall": "46/52",
+  "pct": 88.5,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    11,
+    12
+   ],
+   "moderate_chained": [
+    4,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "xlam-2-1b": {
+  "overall": "44/52",
+  "pct": 84.6,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    10,
+    12
+   ],
+   "moderate_chained": [
+    3,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "xlam-2-3b": {
+  "overall": "40/52",
+  "pct": 76.9,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    9,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ },
+ "xlam-2-8b": {
+  "overall": "42/52",
+  "pct": 80.8,
+  "per": {
+   "simple": [
+    29,
+    30
+   ],
+   "moderate_parallel": [
+    11,
+    12
+   ],
+   "moderate_chained": [
+    0,
+    8
+   ],
+   "coding": [
+    2,
+    2
+   ]
+  }
+ }
+}
