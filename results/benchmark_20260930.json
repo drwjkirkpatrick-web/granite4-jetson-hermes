@@ -4,8 +4,9 @@
   "llama_cpp_build": "84e76d8 (v0.5.0-dev build 794)",
   "model": "granite4-3b.gguf (Granite 4.0 Micro, 3.4B, Q4_K_M, 2.0GB)",
   "model_source": "copied from ollama blob sha256-6c0268... (verified)",
-  "launch_env": {"GGML_CUDA_ENABLE_UNIFIED_MEMORY": "1"},
-
+  "launch_env": {
+    "GGML_CUDA_ENABLE_UNIFIED_MEMORY": "1"
+  },
   "architecture": {
     "type": "hybrid Mamba2 SSM + attention (LLM_ARCH_GRANITE_HYBRID)",
     "blocks": 40,
@@ -18,12 +19,19 @@
     "vocab_size": 100352,
     "rope.freq_base": 10000000.0
   },
-
   "key_findings": {
     "ngl_99_vs_15": {
       "finding": "Full GPU offload (ngl 99) works on build 84e76d8+ with unified memory and is ~3x faster than the old hybrid guidance of ngl 15",
-      "ngl15_gen_tok_s": {"65536_q8_0": 6.7, "49152_q8_0": 6.4, "32768_f16": 6.6},
-      "ngl99_gen_tok_s": {"65536_q8_0": 19.5, "49152_q8_0": 19.4, "32768_f16": 20.0}
+      "ngl15_gen_tok_s": {
+        "65536_q8_0": 6.7,
+        "49152_q8_0": 6.4,
+        "32768_f16": 6.6
+      },
+      "ngl99_gen_tok_s": {
+        "65536_q8_0": 19.5,
+        "49152_q8_0": 19.4,
+        "32768_f16": 20.0
+      }
     },
     "kv_location": "At ngl 99 the KV cache lives on GPU (CUDA0). At ngl 15 it fell back to CPU (CUDA_Host) - the reason the old config was slow.",
     "memory_layout_64k_q8_0": {
@@ -52,41 +60,63 @@
       "note": "q4_0 KV costs generation speed at depth; pp remains strong. 128K is for huge prompts, not long generations."
     }
   },
-
   "profiles": {
     "32k": {
-      "ctx": 32768, "kv_type": "f16",
-      "gen_tok_s": 20.0, "rss_gb": 5.07, "free_after_gb": 0.85,
+      "ctx": 32768,
+      "kv_type": "f16",
+      "gen_tok_s": 20.0,
+      "rss_gb": 5.07,
+      "free_after_gb": 0.85,
       "use": "fastest, full-precision KV, best for tool calling"
     },
     "49k": {
-      "ctx": 49152, "kv_type": "q8_0",
-      "gen_tok_s": 19.4, "rss_gb": 4.72, "free_after_gb": 1.16,
+      "ctx": 49152,
+      "kv_type": "q8_0",
+      "gen_tok_s": 19.4,
+      "rss_gb": 4.72,
+      "free_after_gb": 1.16,
       "use": "deep-load safe - use when the Hermes gateway is resident"
     },
     "64k": {
-      "ctx": 65536, "kv_type": "q8_0",
-      "gen_tok_s": 19.5, "rss_gb": 5.33, "free_after_gb": 0.53,
+      "ctx": 65536,
+      "kv_type": "q8_0",
+      "gen_tok_s": 19.5,
+      "rss_gb": 5.33,
+      "free_after_gb": 0.53,
       "use": "balanced default - 2x context for ~2% speed loss"
     },
     "128k": {
-      "ctx": 131072, "kv_type": "q4_0",
+      "ctx": 131072,
+      "kv_type": "q4_0",
       "gen_tok_s": "~7.2 at 29K depth (shallower = faster)",
-      "pp_tok_s": 359, "rss_gb": 5.66, "free_after_gb": 0.24,
+      "pp_tok_s": 359,
+      "rss_gb": 5.66,
+      "free_after_gb": 0.24,
       "use": "full native context for huge prompts; tightest margins - launch first, nothing else running"
     }
   },
-
   "launch_command_template": {
     "server": "GGML_CUDA_ENABLE_UNIFIED_MEMORY=1 llama-server -m ~/models/new-zoo/granite4-3b.gguf --alias granite4-3b --host 127.0.0.1 --port 8090 -ngl 99 -c {ctx} -ctk {kv} -ctv {kv} -b 512 -ub 512 -fa on --jinja --fit off -np 1 -t 6",
     "sampling_server_defaults": "temp 0.6 top_p 0.95 top_k 0 (chat-tuned)",
     "sampling_tool_calling": "temp 0.0 top_p 1.0 top_k 0 per request (greedy; IBM recommendation; BFCL v2 champion 96.2%)",
     "hermes_link": "provider=custom base_url=http://127.0.0.1:8090/v1 context_length matches profile"
   },
-
   "test_notes": {
     "preflight": "GDM stopped; MemAvailable >4.5GB before launch; pkill stale servers; poll /props not /health",
     "max_tokens_guidance": "Keep prompt+response within profile ctx; for the 128K profile budget max_tokens <= 16384 so a long generation does not overflow the window",
     "reliability": "Hybrid at ngl99 releases memory cleanly after pkill (no GPU-fragmentation lock like dense Ornith Q4_K_M) - retested across 8 launches, zero fragment failures"
+  },
+  "llama_cpp_build_note": {
+    "old_build": "84e76d8 (v0.5.0-dev build 794)",
+    "new_build": "ec7630a (v0.5.0-dev build 965, updated 2026-10-01)",
+    "granite4_3b_rebench": {
+      "short_gen_tok_s": 19.5,
+      "deep_gen_pp_tok_s_29k": 391,
+      "deep_gen_pp_tok_s_22k_server_log": 321,
+      "deep_gen_at_depth_tok_s": 7.2,
+      "tool_call_49k_profile": "PASS - get_weather city=Portland, greedy, 20 tok",
+      "verdict": "no conv-accel gain for SSM conv1d (CUDA conv work targets conv2d/3d vision kernels); speed unchanged; ngl 99 still works; 64k still OOMs under deep-fill + followup request - 49k profile remains the agent config"
+    },
+    "granite_4_2_8b": "see granite42_8b_benchmark_20261001.md - dense 8B, IQ3_M only viable quant, 16K q4_0, 9.6 tok/s, enable_thinking:false required for tool calls"
   }
 }
